@@ -1,0 +1,36 @@
+name: Hanita style fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/hanita-style-fix.yml'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update typography
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace('font-weight:600}.lang-select', 'font-weight:400}.lang-select')
+          s = s.replace("color:#48244F;cursor:pointer", "color:#40383C;cursor:pointer")
+          s = s.replace('text-purple-700/70', 'text-[#65575E]/70')
+          s = s.replace('text-purple-700/75', 'text-[#65575E]/75')
+          s = s.replace('text-purple-700', 'text-[#4A4145]')
+          s = s.replace('text-purple-700/60', 'text-[#65575E]/60')
+          marker = '</style>'
+          css = "\n/* Final typography refinements */\nh1,h2,h3,.font-serif{font-weight:300 !important;}\n.hero-detail{font-weight:400 !important;color:#FF3E7A;}\n#about h2{font-family:'Plus Jakarta Sans',sans-serif !important;font-weight:400 !important;letter-spacing:-.02em;}\n.image-band p.font-serif{font-weight:300 !important;}\n.lang-select{color:#40383C !important;border-color:#D9C3CB !important;}\n"
+          s = s.replace(marker, css + marker, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+          if git diff --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Polish typography and remove purple text"
+          git push
